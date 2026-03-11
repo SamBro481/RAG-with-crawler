@@ -19,8 +19,7 @@ cd rag-pipeline
 pip install -r requirements.txt
 
 3. Add your API keys
-cp .env.example .env
-# then fill in your keys
+cp .env.example .env, then fill in your keys
 
 4. Run the app
 streamlit run app.py

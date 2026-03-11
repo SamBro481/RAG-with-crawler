@@ -1,7 +1,10 @@
 # embedder.py
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 

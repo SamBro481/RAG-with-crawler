@@ -1,7 +1,10 @@
 # vector_store.py
+import os
+from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
 
-pc = Pinecone(api_key="pcsk_53yeKX_XjR2mqQoPDkaPiEN8jQVmXzaxdwsDv1ABQeTjkAzzy97AE1JS71tmWuiLNqkNP")
+load_dotenv()
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 INDEX_NAME = "rag-pipeline"
 DIMENSION = 1536  # text-embedding-3-small dimension

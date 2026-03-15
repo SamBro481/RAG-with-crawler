@@ -1,4 +1,3 @@
-# embedder.py
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -23,7 +22,7 @@ def embed_chunks(chunks: list[dict]) -> list[dict]:
     texts = [chunk["text"] for chunk in chunks]
     
     response = client.embeddings.create(
-        input=texts,          # send all at once
+        input=texts,         
         model=EMBEDDING_MODEL
     )
     

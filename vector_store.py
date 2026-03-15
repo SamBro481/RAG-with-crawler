@@ -1,13 +1,15 @@
-# vector_store.py
 import os
 from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv()
+
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 INDEX_NAME = "rag-pipeline"
-DIMENSION = 1536  # text-embedding-3-small dimension
+DIMENSION = 1536
 
 
 def get_or_create_index():
@@ -21,12 +23,12 @@ def get_or_create_index():
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1")
         )
-        print(f"✅ Index created!")
-    
+        print(f"Index created!")
+
     return pc.Index(INDEX_NAME)
 
 
-def store_embeddings(embedded_chunks: list[dict]):
+def store_embeddings(embedded_chunks: list[dict], namespace: str = "default"):
     index = get_or_create_index()
 
     vectors = []
@@ -38,32 +40,53 @@ def store_embeddings(embedded_chunks: list[dict]):
             "metadata": {
                 "url": chunk["url"],
                 "chunk_index": chunk["chunk_index"],
-                "text": chunk["text"]        # store text in metadata for retrieval
+                "text": chunk["text"]
             }
         })
 
-    # Pinecone recommends upserting in batches of 100
+    batches = [vectors[i:i + 100] for i in range(0, len(vectors), 100)]
+    print(f"Uploading {len(vectors)} vectors in {len(batches)} parallel batches...")
+
+    def upsert_batch(batch):
+        index.upsert(vectors=batch, namespace=namespace)
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        list(executor.map(upsert_batch, batches))
+
+    print(f"✅ Stored {len(vectors)} chunks in namespace '{namespace}'")
+
+
     batch_size = 100
     for i in range(0, len(vectors), batch_size):
         batch = vectors[i:i + batch_size]
-        index.upsert(vectors=batch)
+        index.upsert(vectors=batch, namespace=namespace)  # ← namespace added
 
-    print(f"✅ Stored {len(vectors)} chunks in Pinecone")
+    print(f"Stored {len(vectors)} chunks in namespace '{namespace}'")
 
 
-def get_collection_stats():
+def get_collection_stats(namespace: str = "default"):
     index = get_or_create_index()
     stats = index.describe_index_stats()
-    print(f"📦 Pinecone index has {stats['total_vector_count']} chunks")
+    count = stats.get("namespaces", {}).get(namespace, {}).get("vector_count", 0)
+    print(f"Namespace '{namespace}' has {count} chunks")
 
 
-def search_embeddings(query_vector: list[float], top_k: int = 3) -> list[dict]:
+def delete_namespace(namespace: str):
+    try:
+        index = get_or_create_index()
+        index.delete(delete_all=True, namespace=namespace)
+        print(f"🗑️ Deleted namespace '{namespace}'")
+    except Exception as e:
+        print(f"⚠️ Namespace '{namespace}' not found in Pinecone, skipping...")
+
+def search_embeddings(query_vector: list[float], top_k: int = 3, namespace: str = "default") -> list[dict]:
     index = get_or_create_index()
 
     results = index.query(
         vector=query_vector,
         top_k=top_k,
-        include_metadata=True
+        include_metadata=True,
+        namespace=namespace     
     )
 
     matches = []

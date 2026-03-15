@@ -1,4 +1,3 @@
-# crawler.py
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -12,13 +11,11 @@ def scrape_page(url: str) -> str:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Remove noise
     for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
         tag.decompose()
 
     text = soup.get_text(separator="\n")
 
-    # Clean up whitespace
     lines = [line.strip() for line in text.splitlines()]
     clean_text = "\n".join(line for line in lines if line)
 
@@ -34,25 +31,25 @@ def get_links(url: str, base_domain: str) -> list[str]:
     links = []
     for a_tag in soup.find_all("a", href=True):
         href = a_tag["href"]
-        full_url = urljoin(url, href)         # handle relative URLs e.g. /about
+        full_url = urljoin(url, href)       
         parsed = urlparse(full_url)
 
-        # Stay on same domain, only http/https, no anchors or file extensions
+
         if (
             parsed.netloc == base_domain
             and parsed.scheme in ("http", "https")
-            and not parsed.fragment                         # skip #section links
+            and not parsed.fragment                        
             and not full_url.endswith((".pdf", ".jpg", ".png", ".zip"))
         ):
-            links.append(full_url.split("#")[0])            # strip any trailing anchors
+            links.append(full_url.split("#")[0])          
 
-    return list(set(links))                                 # deduplicate
+    return list(set(links))                     
 
 
 def crawl(start_url: str, max_depth: int = 2) -> dict[str, str]:
     base_domain = urlparse(start_url).netloc
     visited = set()
-    results = {}                                            # { url: text }
+    results = {}                                        
 
     def _crawl(url: str, depth: int):
         if depth > max_depth or url in visited:

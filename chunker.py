@@ -1,4 +1,3 @@
-# chunker.py
 import nltk
 nltk.download("punkt_tab", quiet=True)
 
@@ -21,7 +20,6 @@ def chunk_text(
         sentence = sentences[i]
         sentence_len = len(sentence)
 
-        # If a single sentence exceeds max_chars, include it alone
         if sentence_len > max_chars:
             if current_chunk:
                 chunks.append(" ".join(current_chunk))
@@ -31,10 +29,9 @@ def chunk_text(
             i += 1
             continue
 
-        # If adding this sentence exceeds the limit, save chunk and overlap
         if current_length + sentence_len > max_chars and current_chunk:
             chunks.append(" ".join(current_chunk))
-            # Overlap: keep last N sentences as start of next chunk
+
             current_chunk = current_chunk[-overlap_sentences:]
             current_length = sum(len(s) for s in current_chunk)
 
@@ -42,7 +39,6 @@ def chunk_text(
         current_length += sentence_len
         i += 1
 
-    # Don't forget the last chunk
     if current_chunk:
         chunks.append(" ".join(current_chunk))
 

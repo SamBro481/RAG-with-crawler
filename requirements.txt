@@ -5,3 +5,7 @@ openai
 pinecone
 streamlit
 python-dotenv
+supabase
+rank_bm25
+cohere
+asyncio

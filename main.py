@@ -7,15 +7,15 @@ from rag import ask
 
 
 def ingest(url: str, max_depth: int = 1, max_chars: int = 512):
-    print(f"\n🌐 Crawling: {url} (depth={max_depth})")
+    print(f"\nCrawling: {url} (depth={max_depth})")
     pages = crawl(url, max_depth=max_depth)
-    print(f"✅ Crawled {len(pages)} pages")
+    print(f"Crawled {len(pages)} pages")
 
     print(f"\nChunking...")
     chunks = chunk_pages(pages, max_chars=max_chars)
     print(f"Created {len(chunks)} chunks")
 
-    print(f"\n🔢 Embedding...")
+    print(f"\nEmbedding...")
     embedded = embed_chunks(chunks)
     print(f"Embedded {len(embedded)} chunks")
 
@@ -27,7 +27,7 @@ def ingest(url: str, max_depth: int = 1, max_chars: int = 512):
 
 
 def query_mode():
-    print("\n💬 Query mode — type 'quit' to exit\n")
+    print("\nQuery mode — type 'quit' to exit\n")
     while True:
         question = input("Ask a question: ")
         if question.lower() == "quit":

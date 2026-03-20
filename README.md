@@ -2,6 +2,8 @@
 
 A full Retrieval-Augmented Generation (RAG) pipeline with a web crawler, semantic search, and conversational memory.
 
+#### Visualise it Here: https://webcrawler-rag.streamlit.app
+
 ## Stack
 - **Crawler** — requests + BeautifulSoup
 - **Embeddings** — OpenAI text-embedding-3-small
